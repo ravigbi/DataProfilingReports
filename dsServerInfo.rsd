@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SharedDataSet xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/shareddatasetdefinition">
+  <DataSet Name="">
+    <Query>
+      <DataSourceReference>Localhost</DataSourceReference>
+      <CommandText>select 
+SERVERPROPERTY('Edition') as [Database Edition], 
+ISNULL(SERVERPROPERTY('InstanceName'), 'MSSQLSERVER') as [Instance Name], 
+SERVERPROPERTY('IsIntegratedSecurityOnly') as [Integrated Security], 
+SERVERPROPERTY('MachineName') as [Machine Name], 
+SERVERPROPERTY('ProductVersion') as [Version Number], 
+SERVERPROPERTY('ProductLevel') as [Product Level]
+</CommandText>
+    </Query>
+    <Fields>
+      <Field Name="Database_Edition">
+        <DataField>Database Edition</DataField>
+        <rd:TypeName>System.Object</rd:TypeName>
+      </Field>
+      <Field Name="Instance_Name">
+        <DataField>Instance Name</DataField>
+        <rd:TypeName>System.Object</rd:TypeName>
+      </Field>
+      <Field Name="Integrated_Security">
+        <DataField>Integrated Security</DataField>
+        <rd:TypeName>System.Object</rd:TypeName>
+      </Field>
+      <Field Name="Machine_Name">
+        <DataField>Machine Name</DataField>
+        <rd:TypeName>System.Object</rd:TypeName>
+      </Field>
+      <Field Name="Version_Number">
+        <DataField>Version Number</DataField>
+        <rd:TypeName>System.Object</rd:TypeName>
+      </Field>
+      <Field Name="Product_Level">
+        <DataField>Product Level</DataField>
+        <rd:TypeName>System.Object</rd:TypeName>
+      </Field>
+    </Fields>
+  </DataSet>
+</SharedDataSet>

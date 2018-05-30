@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SharedDataSet xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/shareddatasetdefinition">
+  <DataSet Name="">
+    <Query>
+      <DataSourceReference>Localhost</DataSourceReference>
+      <CommandText>select 
+dbs.database_id as [ID], dbs.name as [Database Name], lgn.name as Owner,
+CAST(mf.size * 8192.0/1048576.0 as decimal(10,2)) as Size, --mf.size * 8 as Size,
+dbs.create_date as [Create Date], dbs.state_desc as Status, 
+--CASE WHEN dbs.is_read_only &lt;&gt; 0 THEN 'Y' ELSE 'N' END as [Read Only], 
+--DATABASEPROPERTYEX(db_name(dbs.database_id), 'Updateability') as Updateability,
+--DATABASEPROPERTYEX(db_name(dbs.database_id), 'UserAccess ') as [User Access],
+CASE 
+WHEN dbs.compatibility_level = 90 THEN 'SQL Server 2005'
+WHEN dbs.compatibility_level = 100 THEN 'SQL Server 2008'
+WHEN dbs.compatibility_level &gt;= 110 THEN 'SQL Server 2012'
+ELSE 'Unknown'
+END
+as [Compatibility Level],
+dbs.collation_name as Collation, 
+mf.physical_name as [Physical Location]
+from sys.databases dbs
+inner join sys.master_files mf ON dbs.database_id = mf.database_id AND mf.data_space_id = 1
+inner join sys.syslogins lgn ON lgn.sid = dbs.owner_sid
+WHERE HAS_DBACCESS(db_name(dbs.database_id))  = 1
+AND lgn.isntuser = 1 -- one way of filtering out system databases
+ORDER by dbs.database_id</CommandText>
+    </Query>
+    <Fields>
+      <Field Name="ID">
+        <DataField>ID</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="Database_Name">
+        <DataField>Database Name</DataField>
+        <rd:TypeName>System.String</rd:TypeName>
+      </Field>
+      <Field Name="Owner">
+        <DataField>Owner</DataField>
+        <rd:TypeName>System.String</rd:TypeName>
+      </Field>
+      <Field Name="Size">
+        <DataField>Size</DataField>
+        <rd:TypeName>System.Decimal</rd:TypeName>
+      </Field>
+      <Field Name="Create_Date">
+        <DataField>Create Date</DataField>
+        <rd:TypeName>System.DateTime</rd:TypeName>
+      </Field>
+      <Field Name="Status">
+        <DataField>Status</DataField>
+        <rd:TypeName>System.String</rd:TypeName>
+      </Field>
+      <Field Name="Compatibility_Level">
+        <DataField>Compatibility Level</DataField>
+        <rd:TypeName>System.String</rd:TypeName>
+      </Field>
+      <Field Name="Collation">
+        <DataField>Collation</DataField>
+        <rd:TypeName>System.String</rd:TypeName>
+      </Field>
+      <Field Name="Physical_Location">
+        <DataField>Physical Location</DataField>
+        <rd:TypeName>System.String</rd:TypeName>
+      </Field>
+    </Fields>
+    <Filters>
+      <Filter>
+        <FilterExpression>=Fields!Database_Name.Value</FilterExpression>
+        <Operator>NotEqual</Operator>
+        <FilterValues>
+          <FilterValue>ReportServerTempDB</FilterValue>
+        </FilterValues>
+      </Filter>
+    </Filters>
+  </DataSet>
+</SharedDataSet>
