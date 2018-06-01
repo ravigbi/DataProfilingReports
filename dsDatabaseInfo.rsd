@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<SharedDataSet xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/shareddatasetdefinition">
+<SharedDataSet xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/shareddatasetdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <DataSet Name="">
     <Query>
       <DataSourceReference>Localhost</DataSourceReference>
-      <CommandText>select 
+      <CommandText>SELECT 
 dbs.database_id as [ID], dbs.name as [Database Name], lgn.name as Owner,
 CAST(mf.size * 8192.0/1048576.0 as decimal(10,2)) as Size, --mf.size * 8 as Size,
 dbs.create_date as [Create Date], dbs.state_desc as Status, 
@@ -13,17 +13,20 @@ dbs.create_date as [Create Date], dbs.state_desc as Status,
 CASE 
 WHEN dbs.compatibility_level = 90 THEN 'SQL Server 2005'
 WHEN dbs.compatibility_level = 100 THEN 'SQL Server 2008'
-WHEN dbs.compatibility_level &gt;= 110 THEN 'SQL Server 2012'
+WHEN dbs.compatibility_level = 110 THEN 'SQL Server 2012'
+WHEN dbs.compatibility_level = 120 THEN 'SQL Server 2014'
+WHEN dbs.compatibility_level = 130 THEN 'SQL Server 2016'
+WHEN dbs.compatibility_level &gt;= 140 THEN 'SQL Server 2017'
 ELSE 'Unknown'
 END
 as [Compatibility Level],
 dbs.collation_name as Collation, 
 mf.physical_name as [Physical Location]
-from sys.databases dbs
-inner join sys.master_files mf ON dbs.database_id = mf.database_id AND mf.data_space_id = 1
-inner join sys.syslogins lgn ON lgn.sid = dbs.owner_sid
+FROM sys.databases dbs
+INNER JOIN sys.master_files mf ON dbs.database_id = mf.database_id AND mf.data_space_id = 1
+INNER JOIN sys.syslogins lgn ON lgn.sid = dbs.owner_sid
 WHERE HAS_DBACCESS(db_name(dbs.database_id))  = 1
-AND lgn.isntuser = 1 -- one way of filtering out system databases
+AND dbs.name NOT IN ('master', 'tempdb', 'msdb', 'model', 'SSISDB', 'ReportServer', 'ReportServerTempDB') -- one way of filtering out system databases
 ORDER by dbs.database_id</CommandText>
     </Query>
     <Fields>
