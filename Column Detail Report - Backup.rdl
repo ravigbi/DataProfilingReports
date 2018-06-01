@@ -1,0 +1,1380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="Localhost">
+      <DataSourceReference>Localhost</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>d310abb9-e363-47f1-a3f0-1a9afde81278</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="dsTableInfo">
+      <Query>
+        <DataSourceName>Localhost</DataSourceName>
+        <CommandText>="select  DB_ID('" &amp; Parameters!pDatabaseName.Label &amp; "') as Database_id, obj.object_id, sch.name as SchemaName, obj.name as TableName, obj.type_desc as TableType, obj.create_date as CreateDate, obj.modify_date as LastModifiedDate,  rcnt.[Rows] as [RowCount], ISNULL(cols.ColumnCount, 0) as [ColumnCount], ISNULL(indx.IndexCount, 0) as [IndexCount], (Pages * 8) as DataSize, CASE WHEN usedPages &gt; Pages THEN (usedPages - Pages) * 8  ELSE 0 END as [IndexSize], USER_NAME(cast(OBJECTPROPERTYEX(obj.object_id, N'OwnerID') as int)) as [OwnerName], CASE WHEN ISNULL(pkey.pkeys, 0) &gt; 0 THEN 'Y' ELSE 'N' END as HasPrimaryKey, CASE WHEN ISNULL(cols.IdentityCount, 0) &gt; 0 THEN 'Y' ELSE 'N' END as HasIdentityColumn, ISNULL(Fkey.Fkeys, 0) as ForeignKeys from " &amp; Parameters!pDatabaseName.Label &amp; ".sys.objects obj inner join " &amp; Parameters!pDatabaseName.Label &amp; ".sys.tables tbl ON obj.object_id = tbl.object_id inner join " &amp; Parameters!pDatabaseName.Label &amp; ".sys.schemas sch ON sch.schema_id = obj.schema_id inner join  (	SELECT  	object_id,  	SUM (used_page_count) as usedPages, 	SUM ( CASE WHEN (index_id &lt; 2) THEN (in_row_data_page_count + lob_used_page_count + row_overflow_used_page_count) 	ELSE 0 	END 	) as Pages, 	SUM (CASE WHEN (index_id &lt; 2) THEN row_count ELSE 0 END ) as [Rows] 	FROM " &amp; Parameters!pDatabaseName.Label &amp; ".sys.dm_db_partition_stats 	group by object_id ) as rcnt ON rcnt.object_id = obj.object_id  left outer join  (select object_id, count(*) ColumnCount, max(cast(is_Identity as int)) as IdentityCount from " &amp; Parameters!pDatabaseName.Label &amp; ".sys.all_columns group by object_id ) as cols ON cols.object_id = obj.object_id  left outer join ( select  object_id, count(*) IndexCount from " &amp; Parameters!pDatabaseName.Label &amp; ".sys.indexes where type IN (1,2) group by object_id ) as indx ON indx.object_id = obj.object_id left outer join  ( select parent_object_id, count(*) as Pkeys from " &amp; Parameters!pDatabaseName.Label &amp; ".sys.key_constraints   where type = 'PK'  group by parent_object_id ) as pkey ON pkey.parent_object_id = obj.object_id left outer join ( select parent_object_id, count(*) as Fkeys from " &amp; Parameters!pDatabaseName.Label &amp; ".sys.foreign_keys   where type = 'F'  group by parent_object_id ) as fkey ON fkey.parent_object_id= obj.object_id WHERE obj.type = 'U'"</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Database_id">
+          <DataField>Database_id</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="SchemaName">
+          <DataField>SchemaName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="object_id">
+          <DataField>object_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="TableName">
+          <DataField>TableName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TableType">
+          <DataField>TableType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CreateDate">
+          <DataField>CreateDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="LastModifiedDate">
+          <DataField>LastModifiedDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="RowCount">
+          <DataField>RowCount</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="ColumnCount">
+          <DataField>ColumnCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IndexCount">
+          <DataField>IndexCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="DataSize">
+          <DataField>DataSize</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="IndexSize">
+          <DataField>IndexSize</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="OwnerName">
+          <DataField>OwnerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="HasPrimaryKey">
+          <DataField>HasPrimaryKey</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="HasIdentityColumn">
+          <DataField>HasIdentityColumn</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ForeignKeys">
+          <DataField>ForeignKeys</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="dsColumnInfo">
+      <Query>
+        <DataSourceName>Localhost</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@pDatabaseName">
+            <Value>=Parameters!pDatabaseName.Label</Value>
+          </QueryParameter>
+          <QueryParameter Name="@pSchemaName">
+            <Value>=Parameters!pSchemaName.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@pTableName">
+            <Value>=Parameters!pTableName.Label</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>-------------------------------------
+--Declarations
+declare @obid int, @dbname sysname, @schemaname sysname, @tablename sysname
+
+declare @colcount int, @cntr int 
+declare @ssql nvarchar(max)
+
+declare @colname sysname, @colid int, @datatypename varchar(50), @tobjid int
+
+
+-------------------------------------
+--Initialization
+--SET @obid = 373576369
+SET @dbname = @pDatabaseName
+SET @schemaname = @pSchemaName
+SET @tablename = @pTableName
+
+SET @cntr = 1
+
+--------------------------------------------
+--Temp Table creation
+if(OBJECT_id(N'tempdb..#tablebase', N'U') is not null) drop table tempdb..#tablebase
+if(OBJECT_id(N'tempdb..#tablestats', N'U') is not null) drop table tempdb..#tablestats
+
+create table #tablebase
+(
+object_id int not null,
+SchemaName varchar(20) not null,
+TableName varchar(50) not null,
+column_id int not null,
+ColumnName varchar(50) not null,
+IsIdentity bit not null,
+IsNullable bit not null,
+user_type_id int not null,
+DateTypeName varchar(50) not null,
+precision int not null,
+scale int not null,
+max_length int not null,
+Collation varchar(50),
+CreateDate datetime
+)
+
+create table #tablestats
+(
+object_id int not null,
+column_id int not null,
+NullValues int,
+DistinctValues int,
+BlankValues int,
+ZeroRows int,
+MinValue varchar(50),
+MaxValue varchar(50),
+MaxLenght int
+)
+
+
+SET @ssql = 'INSERT INTO #TABLEBASE 
+select 
+obj.object_id, sch.name as SchemaName, obj.name as TableName, cls.column_id, cls.name ColumnName, 
+cls.is_identity IsIdentity, cls.is_nullable as IsNullable,
+cls.user_type_id, tps.name DataTypeName, tps.precision, tps.scale, cls.max_length, tps.collation_name as Collation, obj.create_date as CreateDate
+from ' + quotename(@dbname) + '.sys.objects obj
+inner join ' + quotename(@dbname) + '.sys.tables tbl ON obj.object_id = tbl.object_id
+inner join ' + quotename(@dbname) + '.sys.schemas sch ON sch.schema_id = obj.schema_id
+inner join ' + quotename(@dbname) + '.sys.columns cls ON cls.object_id = obj.object_id
+inner join ' + quotename(@dbname) + '.sys.types tps ON cls.user_type_id = tps.user_type_id
+WHERE obj.type = ''U''
+AND obj.name = ''' + @tablename + '''
+Order by sch.name, obj.object_id'
+
+
+EXEC(@ssql)
+
+SET @colcount = @@ROWCOUNT
+
+while @cntr &lt;= @colcount
+
+begin
+
+select @tobjid = object_id, @datatypename = DateTypeName, @colname = ColumnName, @colid = column_id
+from #tablebase
+Where column_id = @cntr
+
+	if @datatypename IN ('varchar', 'nvarchar', 'char', 'nchar', 'sysname')
+	select @ssql = N'INSERT #tablestats
+	SELECT ' + CAST(@tobjid as varchar(20)) + ', ' + cast(@colid as varchar(10)) + ', SUM(CASE WHEN ' + @colname + ' IS NULL THEN 1 ELSE 0 END),
+	COUNT(DISTINCT ' + @colname + '), SUM(CASE WHEN ' + @colname + ' = '''' THEN 1 ELSE 0 END), 0,
+	MIN(CAST(' + @colname + ' as varchar(50))), MAX(CAST(' + @colname + ' as varchar(50))), LEN(MAX(CAST(' + @colname + ' as varchar(50))))
+	from ' + quotename(@dbname) + '.' + quotename(@schemaname) + '.' + quotename(@tablename)
+
+	else 
+	begin 
+		if @datatypename IN ('int', 'bit', 'bigint', 'tinyint', 'smallint', 'real', 'money', 'smallmoney', 'decimal', 'numeric')
+		select @ssql = N'INSERT #tablestats
+		SELECT ' + CAST(@tobjid as varchar(20)) + ', ' + cast(@colid as varchar(10)) + ', SUM(CASE WHEN ' + @colname + ' IS NULL THEN 1 ELSE 0 END),
+		COUNT(DISTINCT ' + @colname + '), 0, SUM(CASE WHEN ' + @colname + ' = 0 THEN 1 ELSE 0 END),
+		MIN(' + @colname + '), MAX(' + @colname + '), 0
+		from ' + quotename(@dbname) + '.' + quotename(@schemaname) + '.' + quotename(@tablename)
+
+		else
+		begin 
+			if @datatypename IN ('datetime', 'date', 'time', 'datetime2', 'smalldatetime', 'timestamp')
+			select @ssql = N'INSERT #tablestats
+			SELECT ' + CAST(@tobjid as varchar(20)) + ', ' + cast(@colid as varchar(10)) + ', SUM(CASE WHEN ' + @colname + ' IS NULL THEN 1 ELSE 0 END),
+			COUNT(DISTINCT ' + @colname + '), 0, 0,
+			MIN(' + @colname + '), MAX(' + @colname + '), 0
+			from ' + quotename(@dbname) + '.' + quotename(@schemaname) + '.' + quotename(@tablename)
+
+			else
+			select @ssql = N'INSERT #tablestats
+			SELECT ' + CAST(@tobjid as varchar(20)) + ', ' + cast(@colid as varchar(10)) + ', SUM(CASE WHEN ' + @colname + ' IS NULL THEN 1 ELSE 0 END),
+			0, 0, 0, 0, 0, 0
+			from ' + quotename(@dbname) + '.' + quotename(@schemaname) + '.' + quotename(@tablename)
+		end
+
+	end
+
+
+exec(@ssql) 
+
+SET @cntr+= 1
+end --while loop
+
+
+select bs.ColumnName, bs.IsIdentity, bs.IsNullable, bs.DateTypeName, bs.precision, bs.scale, bs.max_length, bs.Collation, bs.CreateDate,
+st.NullValues, st.DistinctValues, st.BlankValues, st.ZeroRows, st.MinValue, st.MaxValue, st.MaxLenght 
+from #tablebase bs
+left outer join #tablestats st 
+ON bs.object_id = st.object_id AND bs.column_id = st.column_id</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ColumnName">
+          <DataField>ColumnName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="IsIdentity">
+          <DataField>IsIdentity</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="IsNullable">
+          <DataField>IsNullable</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="DateTypeName">
+          <DataField>DateTypeName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="precision">
+          <DataField>precision</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="scale">
+          <DataField>scale</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="max_length">
+          <DataField>max_length</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Collation">
+          <DataField>Collation</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CreateDate">
+          <DataField>CreateDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="NullValues">
+          <DataField>NullValues</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="DistinctValues">
+          <DataField>DistinctValues</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BlankValues">
+          <DataField>BlankValues</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ZeroRows">
+          <DataField>ZeroRows</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="MinValue">
+          <DataField>MinValue</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="MaxValue">
+          <DataField>MaxValue</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="MaxLenght">
+          <DataField>MaxLenght</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="dsColumnDetails">
+      <Query>
+        <DataSourceName>Localhost</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@pDatabaseName">
+            <Value>=Parameters!pDatabaseName.Label</Value>
+          </QueryParameter>
+          <QueryParameter Name="@pSchemaName">
+            <Value>=Parameters!pSchemaName.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@pTableName">
+            <Value>=Parameters!pTableName.Label</Value>
+          </QueryParameter>
+          <QueryParameter Name="@pColumnName">
+            <Value>=Parameters!pColumnName.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@pRowCount">
+            <Value>=Parameters!pRowCount.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>-------------------------------------
+--Declarations
+declare @dbname sysname, @schemaname sysname, @tablename sysname, @colname sysname
+
+declare @ssql nvarchar(max)
+declare @rowcount int
+
+-------------------------------------
+--Initialization
+SET @dbname = @pDatabaseName
+SET @schemaname = @pSchemaName
+SET @tablename = @pTableName
+SET @colname = @pColumnName
+SET @rowcount = @pRowCount
+
+--------------------------------------------
+IF object_id('tempdb..#tempcoldetails') is not null drop table #tempcoldetails
+CREATE TABLE #tempcoldetails
+(
+ColumnValue varchar(50),
+RowCounts int,
+RowPercentage decimal(10,2)
+)
+
+
+SET @ssql = 'SELECT ' + @colname + ' as ColumnValue, count(*) as RowCounts, 
+Round((count(*) * 100.0/' + cast(@rowcount as varchar(50)) + '), 2) as RowPercentage
+FROM ' + @dbname + '.' + @schemaname + '.' + @tablename + '
+GROUP BY ' +  @colname
+
+--select @ssql
+INSERT INTO #tempcoldetails
+EXEC(@ssql)
+
+
+select '0-10' as ValueRange, count(*) RowCounts
+from #tempcoldetails
+where RowPercentage between 0 AND 10
+union
+select '10-20' as ValueRange, count(*) RowCounts
+from #tempcoldetails
+where RowPercentage between 11 AND 20
+union
+select '20-30' as ValueRange, count(*) RowCounts
+from #tempcoldetails
+where RowPercentage between 21 AND 30
+union
+select '30-40' as ValueRange, count(*) RowCounts
+from #tempcoldetails
+where RowPercentage between 31 AND 40
+union
+select '40-50' as ValueRange, count(*) RowCounts
+from #tempcoldetails
+where RowPercentage between 41 AND 50
+union
+select '50-60' as ValueRange, count(*) RowCounts
+from #tempcoldetails
+where RowPercentage between 51 AND 60
+union
+select '60-70' as ValueRange, count(*) RowCounts
+from #tempcoldetails
+where RowPercentage between 61 AND 70
+union
+select '70-80' as ValueRange, count(*) RowCounts
+from #tempcoldetails
+where RowPercentage between 71 AND 80
+union
+select '80-90' as ValueRange, count(*) RowCounts
+from #tempcoldetails
+where RowPercentage between 81 AND 90
+union
+select '90-100' as ValueRange, count(*) RowCounts
+from #tempcoldetails
+where RowPercentage between 91 AND 100</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ValueRange">
+          <DataField>ValueRange</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RowCounts">
+          <DataField>RowCounts</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="dsDatabaseInfo">
+      <SharedDataSet>
+        <SharedDataSetReference>dsDatabaseInfo</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="ID">
+          <DataField>ID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Database_Name">
+          <DataField>Database_Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Owner">
+          <DataField>Owner</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Size">
+          <DataField>Size</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Create_Date">
+          <DataField>Create_Date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Status">
+          <DataField>Status</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Updateability">
+          <DataField>Updateability</DataField>
+          <rd:TypeName>System.Object</rd:TypeName>
+        </Field>
+        <Field Name="User_Access">
+          <DataField>User_Access</DataField>
+          <rd:TypeName>System.Object</rd:TypeName>
+        </Field>
+        <Field Name="Compatibility_Level">
+          <DataField>Compatibility_Level</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Collation">
+          <DataField>Collation</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Physical_Location">
+          <DataField>Physical_Location</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="dsServerInfo">
+      <SharedDataSet>
+        <SharedDataSetReference>dsServerInfo</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="Database_Edition">
+          <DataField>Database_Edition</DataField>
+          <rd:TypeName>System.Object</rd:TypeName>
+        </Field>
+        <Field Name="Instance_Name">
+          <DataField>Instance_Name</DataField>
+          <rd:TypeName>System.Object</rd:TypeName>
+        </Field>
+        <Field Name="Integrated_Security">
+          <DataField>Integrated_Security</DataField>
+          <rd:TypeName>System.Object</rd:TypeName>
+        </Field>
+        <Field Name="Machine_Name">
+          <DataField>Machine_Name</DataField>
+          <rd:TypeName>System.Object</rd:TypeName>
+        </Field>
+        <Field Name="Version_Number">
+          <DataField>Version_Number</DataField>
+          <rd:TypeName>System.Object</rd:TypeName>
+        </Field>
+        <Field Name="Product_Level">
+          <DataField>Product_Level</DataField>
+          <rd:TypeName>System.Object</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="dsTop5">
+      <Query>
+        <DataSourceName>Localhost</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@pDatabaseName">
+            <Value>=Parameters!pDatabaseName.Label</Value>
+          </QueryParameter>
+          <QueryParameter Name="@pSchemaName">
+            <Value>=Parameters!pSchemaName.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@pTableName">
+            <Value>=Parameters!pTableName.Label</Value>
+          </QueryParameter>
+          <QueryParameter Name="@pColumnName">
+            <Value>=Parameters!pColumnName.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>-------------------------------------
+--Declarations
+declare @dbname sysname, @schemaname sysname, @tablename sysname, @colname sysname
+
+declare @ssql nvarchar(2000)
+declare @rowcount int
+
+-------------------------------------
+--Initialization
+SET @dbname = @pDatabaseName
+SET @schemaname = @pSchemaName
+SET @tablename = @pTableName
+SET @colname = @pColumnName
+
+--------------------------------------------
+
+SET @ssql = 'SELECT TOP 10 ' + quotename(@colname) + ' as ColumnValue, count(*) as RowCounts
+FROM ' + quotename(@dbname) + '.' + quotename(@schemaname) + '.' + quotename(@tablename) + '
+GROUP BY ' + quotename(@colname) + '
+ORDER BY RowCounts desc
+'
+--select @ssql, len(@ssql)
+
+EXEC(@ssql)</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ColumnValue">
+          <DataField>ColumnValue</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Percentage">
+          <Value>=Fields!RowCounts.Value/Parameters!pRowCount.Value</Value>
+        </Field>
+        <Field Name="RowCounts">
+          <DataField>RowCounts</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Chart Name="Chart1">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart1_CategoryGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!ValueRange.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!ValueRange.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <Label>=Fields!ValueRange.Value &amp; "%"</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label>Row Counts</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="RowCounts">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!RowCounts.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                      </ChartDataLabel>
+                      <Style>
+                        <Color>Maroon</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Column Value percentage range</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                      <Format>#,0;(#,0)</Format>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Number of Rows</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </ChartAxisTitle>
+                    <IntervalType>Number</IntervalType>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Maroon</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Interlaced>true</Interlaced>
+                    <Minimum>=Min(Fields!RowCounts.Value)</Minimum>
+                    <Maximum>=Max(Fields!RowCounts.Value)</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundColor>#00ffffff</BackgroundColor>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartTitles>
+              <ChartTitle Name="Default">
+                <Caption>Column value distribution percentage</Caption>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontWeight>Bold</FontWeight>
+                  <TextAlign>General</TextAlign>
+                  <VerticalAlign>Top</VerticalAlign>
+                </Style>
+              </ChartTitle>
+            </ChartTitles>
+            <Palette>Chocolate</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>dsColumnDetails</DataSetName>
+            <Top>0.17708in</Top>
+            <Left>0.24875in</Left>
+            <Height>3.92708in</Height>
+            <Width>8.91667in</Width>
+            <ToolTip>Column Value Distribution Chart</ToolTip>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>Solid</Style>
+              </Border>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+          <Tablix Name="Tablix1">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>0.5625in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.08334in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.82292in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.89583in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>#</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Maroon</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>Maroon</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Column Value</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Maroon</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>Maroon</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox3">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Rows</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox3</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Maroon</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>Maroon</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Percentage</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Maroon</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>Maroon</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox7">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=RowNumber("dsTop5")</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox7</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Maroon</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ColumnValue">
+                          <CanGrow>true</CanGrow>
+                          <CanShrink>true</CanShrink>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=IIF(IsNothing(Fields!ColumnValue.Value), "NULL", Fields!ColumnValue.Value)</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ColumnValue</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Maroon</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="RowCounts">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!RowCounts.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>RowCounts</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Maroon</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Percentage">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Percentage.Value</Value>
+                                  <Style>
+                                    <Format>0.00%</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Percentage</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Maroon</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="Details" />
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <RepeatColumnHeaders>true</RepeatColumnHeaders>
+            <FixedColumnHeaders>true</FixedColumnHeaders>
+            <KeepTogether>true</KeepTogether>
+            <NoRowsMessage>No rows returned</NoRowsMessage>
+            <DataSetName>dsTop5</DataSetName>
+            <SortExpressions>
+              <SortExpression>
+                <Value>=Fields!RowCounts.Value</Value>
+                <Direction>Descending</Direction>
+              </SortExpression>
+            </SortExpressions>
+            <Top>4.35417in</Top>
+            <Left>2.37375in</Left>
+            <Height>0.5in</Height>
+            <Width>4.36459in</Width>
+            <ZIndex>1</ZIndex>
+            <ToolTip>Top 5 Values</ToolTip>
+            <Style>
+              <Border>
+                <Color>Maroon</Color>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+        </ReportItems>
+        <Height>5.1875in</Height>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+          <BackgroundColor>Bisque</BackgroundColor>
+        </Style>
+      </Body>
+      <Width>9.8425in</Width>
+      <Page>
+        <PageHeader>
+          <Height>1.12375in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Image Name="Logo">
+              <Source>External</Source>
+              <Value>logo_anexinet.gif</Value>
+              <ActionInfo>
+                <Actions>
+                  <Action>
+                    <Hyperlink>http://www.anexinet.com/</Hyperlink>
+                  </Action>
+                </Actions>
+              </ActionInfo>
+              <Height>1.09375in</Height>
+              <Width>2.08333in</Width>
+              <ToolTip>Anexinet</ToolTip>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+              </Style>
+            </Image>
+            <Line Name="Line1">
+              <Top>1.11333in</Top>
+              <Left>0.00917in</Left>
+              <Height>0in</Height>
+              <Width>9.78472in</Width>
+              <ZIndex>1</ZIndex>
+              <Style>
+                <Border>
+                  <Color>Maroon</Color>
+                  <Style>Solid</Style>
+                </Border>
+              </Style>
+            </Line>
+            <Textbox Name="Textbox5">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>="Data Profiling Reports - " &amp; Globals!ReportName &amp; vbcrlf &amp; vbcrlf &amp; "[" &amp; Parameters!pDatabaseName.Label &amp; "].[" &amp; Parameters!pSchemaName.Label  &amp; "].[" &amp; Parameters!pTableName.Label &amp; "].[" &amp; Parameters!pColumnName.Value &amp; "]"</Value>
+                      <Style>
+                        <FontSize>14pt</FontSize>
+                        <Color>Maroon</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox5</rd:DefaultName>
+              <Top>0.42188in</Top>
+              <Left>2.86333in</Left>
+              <Height>0.25in</Height>
+              <Width>6.63542in</Width>
+              <ZIndex>2</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageHeader>
+        <PageFooter>
+          <Height>0.79167in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Line Name="Line2">
+              <Top>0in</Top>
+              <Left>0.00917in</Left>
+              <Height>0in</Height>
+              <Width>9.78472in</Width>
+              <Style>
+                <Border>
+                  <Color>Maroon</Color>
+                  <Style>Solid</Style>
+                </Border>
+              </Style>
+            </Line>
+            <Textbox Name="ExecutionTime">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=Globals!ExecutionTime</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>ExecutionTime</rd:DefaultName>
+              <Top>0.04167in</Top>
+              <Left>0.24875in</Left>
+              <Height>0.14583in</Height>
+              <Width>1.46875in</Width>
+              <ZIndex>1</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox4">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>= "Page " &amp; Globals!PageNumber &amp; " of " &amp; Globals!TotalPages</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox4</rd:DefaultName>
+              <Top>0.22917in</Top>
+              <Left>0.24875in</Left>
+              <Height>0.125in</Height>
+              <Width>1.67708in</Width>
+              <ZIndex>2</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
+        <PageHeight>8.5in</PageHeight>
+        <PageWidth>11in</PageWidth>
+        <LeftMargin>1in</LeftMargin>
+        <RightMargin>1in</RightMargin>
+        <TopMargin>1in</TopMargin>
+        <BottomMargin>1in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="pDatabaseName">
+      <DataType>String</DataType>
+      <Prompt>Select a Database</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>dsDatabaseInfo</DataSetName>
+          <ValueField>ID</ValueField>
+          <LabelField>Database_Name</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="pTableName">
+      <DataType>String</DataType>
+      <Prompt>Select Table</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>dsTableInfo</DataSetName>
+          <ValueField>object_id</ValueField>
+          <LabelField>TableName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="pSchemaName">
+      <DataType>String</DataType>
+      <Prompt>Select Schema</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pRowCount">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>0</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Enter Row Count</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pColumnName">
+      <DataType>String</DataType>
+      <Prompt>Select Column</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>528877ab-edab-4ef8-971e-68ff09b52e79</rd:ReportID>
+</Report>
